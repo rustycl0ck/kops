@@ -145,9 +145,9 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 		}
 		if val != "" {
 			switch envVar {
-			case "OS_TENANT_ID":
+			case "OS_TENANT_ID", "OS_PROJECT_ID":
 				opt.TenantID = val
-			case "OS_TENANT_NAME":
+			case "OS_TENANT_NAME", "OS_PROJECT_NAME":
 				opt.TenantName = val
 			case "OS_PROJECT_DOMAIN_NAME":
 				opt.DomainName = val
