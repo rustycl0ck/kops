@@ -87,122 +87,146 @@ type OpenstackCloud interface {
 	LoadBalancerClient() *gophercloud.ServiceClient
 	DNSClient() *gophercloud.ServiceClient
 
-	// Region returns the region which cloud will run on
-	Region() string
-
-	ListInstances(servers.ListOptsBuilder) ([]servers.Server, error)
-
-	CreateInstance(servers.CreateOptsBuilder) (*servers.Server, error)
-
-	// SetVolumeTags will set the tags for the Cinder volume
-	SetVolumeTags(id string, tags map[string]string) error
+	// GetApiIngressStatus returns locations used to connect to the api server externally
+	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
 
 	// GetCloudTags will return the tags attached on cloud
 	GetCloudTags() map[string]string
 
-	// ListVolumes will return the Cinder volumes which match the options
-	ListVolumes(opt cinder.ListOptsBuilder) ([]cinder.Volume, error)
+	// Region returns the region which cloud will run on
+	Region() string
 
-	// CreateVolume will create a new Cinder Volume
-	CreateVolume(opt cinder.CreateOptsBuilder) (*cinder.Volume, error)
+	// availability_zone.go
+	//
+	// Returns the availability zones for the service client passed (compute, volume, network)
+	ListAvailabilityZones(serviceClient *gophercloud.ServiceClient) ([]az.AvailabilityZone, error)
+	// Returns the most appropriate storage availability zone given a compute availability zone
+	GetStorageAZFromCompute(azName string) (*az.AvailabilityZone, error)
 
-	AttachVolume(serverID string, opt volumeattach.CreateOpts) (*volumeattach.VolumeAttachment, error)
-
-	//ListSecurityGroups will return the Neutron security groups which match the options
-	ListSecurityGroups(opt sg.ListOpts) ([]sg.SecGroup, error)
-
-	//CreateSecurityGroup will create a new Neutron security group
-	CreateSecurityGroup(opt sg.CreateOptsBuilder) (*sg.SecGroup, error)
-
-	//ListSecurityGroupRules will return the Neutron security group rules which match the options
-	ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule, error)
-
-	//CreateSecurityGroupRule will create a new Neutron security group rule
-	CreateSecurityGroupRule(opt sgr.CreateOptsBuilder) (*sgr.SecGroupRule, error)
-
-	//GetNetwork will return the Neutron network which match the id
-	GetNetwork(networkID string) (*networks.Network, error)
-
-	//ListNetworks will return the Neutron networks which match the options
-	ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error)
-
-	//ListExternalNetworks will return the Neutron networks with the router:external property
-	GetExternalNetwork() (*networks.Network, error)
-
-	//CreateNetwork will create a new Neutron network
-	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
-
-	//ListRouters will return the Neutron routers which match the options
-	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
-
-	//CreateRouter will create a new Neutron router
-	CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error)
-
-	//ListSubnets will return the Neutron subnets which match the options
-	ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error)
-
-	//CreateSubnet will create a new Neutron subnet
-	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
-
-	// ListKeypair will return the Nova keypairs
-	ListKeypair(name string) (*keypairs.KeyPair, error)
-
-	// CreateKeypair will create a new Nova Keypair
-	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
-
-	CreatePort(opt ports.CreateOptsBuilder) (*ports.Port, error)
-
-	//ListPorts will return the Neutron ports which match the options
-	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
-
-	//CreateRouterInterface will create a new Neutron router interface
-	CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error)
-
-	// CreateServerGroup will create a new server group.
-	CreateServerGroup(opt servergroups.CreateOptsBuilder) (*servergroups.ServerGroup, error)
-
-	// ListServerGroups will list available server groups
-	ListServerGroups() ([]servergroups.ServerGroup, error)
-
+	// dns.go
+	//
 	// ListDNSZones will list available DNS zones
 	ListDNSZones(opt zones.ListOptsBuilder) ([]zones.Zone, error)
-
 	// ListDNSRecordsets will list the DNS recordsets for the given zone id
 	ListDNSRecordsets(zoneID string, opt recordsets.ListOptsBuilder) ([]recordsets.RecordSet, error)
 
+	// floatingip.go
+	//
+	// GetFloatingIP returns a floatingip given its ID
+	GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error)
+	// AssociateFloatingIPToInstance will associate a floating ip to a server provided a Server ID
+	AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error)
+	// ListFloatingIPs will list all available floating IPs
+	ListFloatingIPs() (fips []floatingips.FloatingIP, err error)
+	// ListL3FloatingIPs will list all available layer 3 floating IPs given the layer3 extension list options
+	ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error)
+	// CreateFloatingIP will create a floating IP
+	CreateFloatingIP(opts floatingips.CreateOpts) (*floatingips.FloatingIP, error)
+	// CreateL3FloatingIP will create a L3 floating IP
+	CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error)
+
+	// instance.go
+	//
+	// ListInstances will list openstack servers
+	ListInstances(servers.ListOptsBuilder) ([]servers.Server, error)
+	// CreateInstance will create an openstack server
+	CreateInstance(servers.CreateOptsBuilder) (*servers.Server, error)
+	// Delete instance will delete an openstack server *NOT IMPLEMENTED*
+	// DeleteInstance(i *cloudinstances.CloudInstanceGroupMember)
+
+	// keypair.go
+	//
+	// ListKeypair will return the Nova keypairs
+	ListKeypair(name string) (*keypairs.KeyPair, error)
+	// CreateKeypair will create a new Nova Keypair
+	CreateKeypair(opt keypairs.CreateOptsBuilder) (*keypairs.KeyPair, error)
+
+	// loadbalancer.go
+	//
+	// GetLB retrieves a loadbalancer from its ID
 	GetLB(loadbalancerID string) (*loadbalancers.LoadBalancer, error)
-
+	// CreateLB will create an openstack loadbalancer
 	CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error)
-
+	// ListLBs will list openstack loadbalancers
 	ListLBs(opt loadbalancers.ListOptsBuilder) ([]loadbalancers.LoadBalancer, error)
+	// AssociateToPool will associate a server to a pool given the pools ID
+	AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (*v2pools.Member, error)
+	// CreatePool will create an openstack pool
+	CreatePool(opts v2pools.CreateOpts) (*v2pools.Pool, error)
+	// ListPools will list openstack pools
+	ListPools(v2pools.ListOpts) ([]v2pools.Pool, error)
+	// ListListeners will list openstack listeners
+	ListListeners(opts listeners.ListOpts) ([]listeners.Listener, error)
+	// CreateListener will create an openstack listener
+	CreateListener(opts listeners.CreateOpts) (*listeners.Listener, error)
 
-	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
+	// network.go
+	//
+	// GetNetwork will return the Neutron network which match the id
+	GetNetwork(networkID string) (*networks.Network, error)
+	// ListNetworks will return the Neutron networks which match the options
+	ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error)
+	// ListExternalNetworks will return the Neutron networks with the router:external property
+	GetExternalNetwork() (*networks.Network, error)
+	// CreateNetwork will create a new Neutron network
+	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
 
+	// port.go
+	//
+	//ListPorts will create a Neutron ports which match the options
+	CreatePort(opt ports.CreateOptsBuilder) (*ports.Port, error)
+	//ListPorts will return the Neutron ports which match the options
+	ListPorts(opt ports.ListOptsBuilder) ([]ports.Port, error)
+
+	// router.go
+	//
+	//ListRouters will return the Neutron routers which match the options
+	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
+	//CreateRouter will create a new Neutron router
+	CreateRouter(opt routers.CreateOptsBuilder) (*routers.Router, error)
+	//CreateRouterInterface will create a new Neutron router interface
+	CreateRouterInterface(routerID string, opt routers.AddInterfaceOptsBuilder) (*routers.InterfaceInfo, error)
+
+	// security_group.go
+	//
+	//ListSecurityGroups will return the Neutron security groups which match the options
+	ListSecurityGroups(opt sg.ListOpts) ([]sg.SecGroup, error)
+	//CreateSecurityGroup will create a new Neutron security group
+	CreateSecurityGroup(opt sg.CreateOptsBuilder) (*sg.SecGroup, error)
+	//ListSecurityGroupRules will return the Neutron security group rules which match the options
+	ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule, error)
+	//CreateSecurityGroupRule will create a new Neutron security group rule
+	CreateSecurityGroupRule(opt sgr.CreateOptsBuilder) (*sgr.SecGroupRule, error)
+
+	// server_group.go
+	//
+	// CreateServerGroup will create a new server group.
+	CreateServerGroup(opt servergroups.CreateOptsBuilder) (*servergroups.ServerGroup, error)
+	// ListServerGroups will list available server groups
+	ListServerGroups() ([]servergroups.ServerGroup, error)
+
+	// subnet.go
+	//
+	//ListSubnets will return the Neutron subnets which match the options
+	ListSubnets(opt subnets.ListOptsBuilder) ([]subnets.Subnet, error)
+	//CreateSubnet will create a new Neutron subnet
+	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
+
+	// utils.go
+	//
 	// DefaultInstanceType determines a suitable instance type for the specified instance group
 	DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error)
 
-	// Returns the availability zones for the service client passed (compute, volume, network)
-	ListAvailabilityZones(serviceClient *gophercloud.ServiceClient) ([]az.AvailabilityZone, error)
-
-	AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (*v2pools.Member, error)
-
-	CreatePool(opts v2pools.CreateOpts) (*v2pools.Pool, error)
-
-	ListPools(v2pools.ListOpts) ([]v2pools.Pool, error)
-
-	ListListeners(opts listeners.ListOpts) ([]listeners.Listener, error)
-
-	CreateListener(opts listeners.CreateOpts) (*listeners.Listener, error)
-
-	GetStorageAZFromCompute(azName string) (*az.AvailabilityZone, error)
-
-	GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error)
-
-	AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error)
-	ListFloatingIPs() (fips []floatingips.FloatingIP, err error)
-	ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error)
-	CreateFloatingIP(opts floatingips.CreateOpts) (*floatingips.FloatingIP, error)
-	CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error)
+	// volume.go
+	//
+	// SetVolumeTags will set the tags for the Cinder volume
+	SetVolumeTags(id string, tags map[string]string) error
+	// ListVolumes will return the Cinder volumes which match the options
+	ListVolumes(opt cinder.ListOptsBuilder) ([]cinder.Volume, error)
+	// CreateVolume will create a new Cinder Volume
+	CreateVolume(opt cinder.CreateOptsBuilder) (*cinder.Volume, error)
+	// AttachVolume attaches the volume to a server provide a server ID and attach options
+	AttachVolume(serverID string, opt volumeattach.CreateOpts) (*volumeattach.VolumeAttachment, error)
 }
 
 type openstackCloud struct {
