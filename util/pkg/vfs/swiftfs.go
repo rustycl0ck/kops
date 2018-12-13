@@ -135,7 +135,13 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 	opt, fileErr := oc.getCredentialFromFile()
 
 	// Override all file values with the equivalent environment variables
-	for _, envVar := range []string{"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID", "OS_USERNAME", "OS_PASSWORD", "OS_AUTH_URL"} {
+	for _, envVar := range []string{
+		"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
+		"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
+		"OS_USERNAME",
+		"OS_PASSWORD",
+		"OS_AUTH_URL",
+	} {
 		val := os.Getenv(envVar)
 		// If surrounded by single quotes, strip
 		if len(val) > 1 {
