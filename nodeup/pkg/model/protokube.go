@@ -348,6 +348,8 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 				f.DNSProvider = fi.String("coredns")
 				f.ClusterID = fi.String(t.Cluster.ObjectMeta.Name)
 				f.DNSServer = fi.String(*t.Cluster.Spec.CloudConfig.VSphereCoreDNSServer)
+			case kops.CloudProviderOpenstack:
+				f.ClusterID = fi.String(t.Cluster.ObjectMeta.Name)
 			default:
 				glog.Warningf("Unknown cloudprovider %q; won't set DNS provider", t.Cluster.Spec.CloudProvider)
 			}
@@ -407,6 +409,30 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString("'")
 		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
 		buffer.WriteString("'")
+		buffer.WriteString(" ")
+	}
+
+	if os.Getenv("OS_AUTH_URL") != "" {
+		for _, envVar := range []string{
+			"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
+			"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
+			"OS_USERNAME",
+			"OS_PASSWORD",
+			"OS_AUTH_URL",
+			"OS_REGION_NAME",
+		} {
+			buffer.WriteString(" -e ")
+			buffer.WriteString(envVar)
+			buffer.WriteString("='")
+			buffer.WriteString(os.Getenv(envVar))
+			buffer.WriteString("'")
+		}
+	}
+
+	if os.Getenv("OPENSTACK_CREDENTIAL_FILE") != "" {
+		buffer.WriteString(" ")
+		buffer.WriteString("-e OPENSTACK_CREDENTIAL_FILE=")
+		buffer.WriteString(filepath.Join("/rootfs", os.Getenv("OPENSTACK_CREDENTIAL_FILE")))
 		buffer.WriteString(" ")
 	}
 
