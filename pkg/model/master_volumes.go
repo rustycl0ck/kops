@@ -238,7 +238,7 @@ func (b *MasterVolumeBuilder) addVSphereVolume(c *fi.ModelBuilderContext, name s
 func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) error {
 	volumeType := fi.StringValue(m.VolumeType)
 	if volumeType == "" {
-		return fmt.Errorf("must set ETCDMemberSpec.VolumeType on Openstack platform")
+		return fmt.Errorf("Must set ETCDMemberSpec.VolumeType on Openstack platform")
 	}
 
 	// The tags are how protokube knows to mount the volume and use it for etcd
@@ -247,6 +247,8 @@ func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name
 	for k, v := range b.Cluster.Spec.CloudLabels {
 		tags[k] = v
 	}
+
+	tags[openstack.TagClusterName] = b.ClusterName()
 	// This is the configuration of the etcd cluster
 	tags[openstack.TagNameEtcdClusterPrefix+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
 	// This says "only mount on a master"
