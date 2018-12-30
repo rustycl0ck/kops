@@ -56,7 +56,7 @@ func (c *openstackCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.Ins
 		memory int
 		cpu    int
 	}
-	flavorPage, err := flavors.ListDetail(c.novaClient, flavors.ListOpts{
+	flavorPage, err := flavors.ListDetail(c.ComputeClient(), flavors.ListOpts{
 		MinRAM: 1024,
 	}).AllPages()
 	if err != nil {

@@ -50,7 +50,7 @@ func (c *openstackCloud) ListAvailabilityZones(serviceClient *gophercloud.Servic
 func (c *openstackCloud) GetStorageAZFromCompute(computeAZ string) (*az.AvailabilityZone, error) {
 	// TODO: This is less than desirable, but openstack differs here
 	// Check to see if the availability zone exists.
-	azList, err := c.ListAvailabilityZones(c.cinderClient)
+	azList, err := c.ListAvailabilityZones(c.BlockStorageClient())
 	if err != nil {
 		return nil, fmt.Errorf("Volume.RenderOpenstack: %v", err)
 	}

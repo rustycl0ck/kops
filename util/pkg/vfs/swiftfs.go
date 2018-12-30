@@ -135,7 +135,13 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 	opt, fileErr := oc.getCredentialFromFile()
 
 	// Override all file values with the equivalent environment variables
-	for _, envVar := range []string{"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID", "OS_USERNAME", "OS_PASSWORD", "OS_AUTH_URL"} {
+	for _, envVar := range []string{
+		"OS_TENANT_ID", "OS_TENANT_NAME", "OS_PROJECT_ID", "OS_PROJECT_NAME",
+		"OS_PROJECT_DOMAIN_NAME", "OS_PROJECT_DOMAIN_ID",
+		"OS_USERNAME",
+		"OS_PASSWORD",
+		"OS_AUTH_URL",
+	} {
 		val := os.Getenv(envVar)
 		// If surrounded by single quotes, strip
 		if len(val) > 1 {
@@ -145,9 +151,9 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 		}
 		if val != "" {
 			switch envVar {
-			case "OS_TENANT_ID":
+			case "OS_TENANT_ID", "OS_PROJECT_ID":
 				opt.TenantID = val
-			case "OS_TENANT_NAME":
+			case "OS_TENANT_NAME", "OS_PROJECT_NAME":
 				opt.TenantName = val
 			case "OS_PROJECT_DOMAIN_NAME":
 				opt.DomainName = val
@@ -171,9 +177,11 @@ func (oc OpenstackConfig) GetCredential() (gophercloud.AuthOptions, error) {
 	}
 	if opt.Username == "" {
 		err.WriteString("OS_USERNAME, ")
+		return opt, fmt.Errorf("Swift will not use env auth as it is missing OS_USERNAME")
 	}
 	if opt.Password == "" {
 		err.WriteString("OS_PASSWORD, ")
+		return opt, fmt.Errorf("Swift will not use env auth as it is missing OS_PASSWORD")
 	}
 	if opt.IdentityEndpoint == "" {
 		err.WriteString("OS_AUTH_URL ")

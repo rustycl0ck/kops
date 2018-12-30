@@ -96,6 +96,45 @@ type OpenstackCloud interface {
 	// Region returns the region which cloud will run on
 	Region() string
 
+	// ListVolumes will return the Cinder volumes which match the options
+	ListVolumes(opt cinder.ListOptsBuilder) ([]cinder.Volume, error)
+
+	// CreateVolume will create a new Cinder Volume
+	CreateVolume(opt cinder.CreateOptsBuilder) (*cinder.Volume, error)
+
+	// AttachVolume attaches the volume to a server, provide a server ID and attach options
+	AttachVolume(serverID string, opt volumeattach.CreateOpts) (*volumeattach.VolumeAttachment, error)
+
+	// SetVolumeTags will set the tags for the Cinder volume
+	SetVolumeTags(id string, tags map[string]string) error
+
+	//ListSecurityGroups will return the Neutron security groups which match the options
+	ListSecurityGroups(opt sg.ListOpts) ([]sg.SecGroup, error)
+
+	//CreateSecurityGroup will create a new Neutron security group
+	CreateSecurityGroup(opt sg.CreateOptsBuilder) (*sg.SecGroup, error)
+
+	//ListSecurityGroupRules will return the Neutron security group rules which match the options
+	ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule, error)
+
+	//CreateSecurityGroupRule will create a new Neutron security group rule
+	CreateSecurityGroupRule(opt sgr.CreateOptsBuilder) (*sgr.SecGroupRule, error)
+
+	//GetNetwork will return the Neutron network which match the id
+	GetNetwork(networkID string) (*networks.Network, error)
+
+	//ListNetworks will return the Neutron networks which match the options
+	ListNetworks(opt networks.ListOptsBuilder) ([]networks.Network, error)
+
+	//ListExternalNetworks will return the Neutron networks with the router:external property
+	GetExternalNetwork() (*networks.Network, error)
+
+	//CreateNetwork will create a new Neutron network
+	CreateNetwork(opt networks.CreateOptsBuilder) (*networks.Network, error)
+
+	//ListRouters will return the Neutron routers which match the options
+	ListRouters(opt routers.ListOpts) ([]routers.Router, error)
+
 	// availability_zone.go
 	//
 	// Returns the availability zones for the service client passed (compute, volume, network)
@@ -212,21 +251,39 @@ type OpenstackCloud interface {
 	//CreateSubnet will create a new Neutron subnet
 	CreateSubnet(opt subnets.CreateOptsBuilder) (*subnets.Subnet, error)
 
-	// utils.go
-	//
+	GetLB(loadbalancerID string) (*loadbalancers.LoadBalancer, error)
+
+	CreateLB(opt loadbalancers.CreateOptsBuilder) (*loadbalancers.LoadBalancer, error)
+
+	ListLBs(opt loadbalancers.ListOptsBuilder) ([]loadbalancers.LoadBalancer, error)
+
+	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
+
 	// DefaultInstanceType determines a suitable instance type for the specified instance group
 	DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error)
 
-	// volume.go
-	//
-	// SetVolumeTags will set the tags for the Cinder volume
-	SetVolumeTags(id string, tags map[string]string) error
-	// ListVolumes will return the Cinder volumes which match the options
-	ListVolumes(opt cinder.ListOptsBuilder) ([]cinder.Volume, error)
-	// CreateVolume will create a new Cinder Volume
-	CreateVolume(opt cinder.CreateOptsBuilder) (*cinder.Volume, error)
-	// AttachVolume attaches the volume to a server provide a server ID and attach options
-	AttachVolume(serverID string, opt volumeattach.CreateOpts) (*volumeattach.VolumeAttachment, error)
+	// Returns the availability zones for the service client passed (compute, volume, network)
+	ListAvailabilityZones(serviceClient *gophercloud.ServiceClient) ([]az.AvailabilityZone, error)
+
+	AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (*v2pools.Member, error)
+
+	CreatePool(opts v2pools.CreateOpts) (*v2pools.Pool, error)
+
+	ListPools(v2pools.ListOpts) ([]v2pools.Pool, error)
+
+	ListListeners(opts listeners.ListOpts) ([]listeners.Listener, error)
+
+	CreateListener(opts listeners.CreateOpts) (*listeners.Listener, error)
+
+	GetStorageAZFromCompute(azName string) (*az.AvailabilityZone, error)
+
+	GetFloatingIP(id string) (fip *floatingips.FloatingIP, err error)
+
+	AssociateFloatingIPToInstance(serverID string, opts floatingips.AssociateOpts) (err error)
+	ListFloatingIPs() (fips []floatingips.FloatingIP, err error)
+	ListL3FloatingIPs(opts l3floatingip.ListOpts) (fips []l3floatingip.FloatingIP, err error)
+	CreateFloatingIP(opts floatingips.CreateOpts) (*floatingips.FloatingIP, error)
+	CreateL3FloatingIP(opts l3floatingip.CreateOpts) (fip *l3floatingip.FloatingIP, err error)
 }
 
 type openstackCloud struct {

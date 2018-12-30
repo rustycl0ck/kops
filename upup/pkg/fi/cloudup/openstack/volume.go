@@ -71,7 +71,7 @@ func (c *openstackCloud) CreateVolume(opt cinder.CreateOptsBuilder) (*cinder.Vol
 
 func (c *openstackCloud) AttachVolume(serverID string, opts volumeattach.CreateOpts) (attachment *volumeattach.VolumeAttachment, err error) {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		volumeAttachment, err := volumeattach.Create(c.novaClient, serverID, opts).Extract()
+		volumeAttachment, err := volumeattach.Create(c.ComputeClient(), serverID, opts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("error attaching volume %s to server %s: %v", opts.VolumeID, serverID, err)
 		}

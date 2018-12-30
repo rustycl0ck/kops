@@ -89,10 +89,10 @@ func (c *openstackCloud) ListLBs(opt loadbalancers.ListOptsBuilder) (lbs []loadb
 func (c *openstackCloud) AssociateToPool(server *servers.Server, poolID string, opts v2pools.CreateMemberOpts) (association *v2pools.Member, err error) {
 
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		association, err = v2pools.GetMember(c.neutronClient, poolID, server.ID).Extract()
+		association, err = v2pools.GetMember(c.NetworkingClient(), poolID, server.ID).Extract()
 		if err != nil || association == nil {
 			// Pool association does not exist.  Create it
-			association, err = v2pools.CreateMember(c.neutronClient, poolID, opts).Extract()
+			association, err = v2pools.CreateMember(c.NetworkingClient(), poolID, opts).Extract()
 			if err != nil {
 				return false, fmt.Errorf("Failed to create pool association: %v", err)
 			}
@@ -112,7 +112,7 @@ func (c *openstackCloud) AssociateToPool(server *servers.Server, poolID string, 
 
 func (c *openstackCloud) CreatePool(opts v2pools.CreateOpts) (pool *v2pools.Pool, err error) {
 	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
-		pool, err = v2pools.Create(c.lbClient, opts).Extract()
+		pool, err = v2pools.Create(c.LoadBalancerClient(), opts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("Failed to create pool: %v", err)
 		}
@@ -129,7 +129,7 @@ func (c *openstackCloud) CreatePool(opts v2pools.CreateOpts) (pool *v2pools.Pool
 
 func (c *openstackCloud) ListPools(opts v2pools.ListOpts) (poolList []v2pools.Pool, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		poolPage, err := v2pools.List(c.lbClient, opts).AllPages()
+		poolPage, err := v2pools.List(c.LoadBalancerClient(), opts).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("Failed to list pools: %v", err)
 		}
@@ -150,7 +150,7 @@ func (c *openstackCloud) ListPools(opts v2pools.ListOpts) (poolList []v2pools.Po
 
 func (c *openstackCloud) ListListeners(opts listeners.ListOpts) (listenerList []listeners.Listener, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		listenerPage, err := listeners.List(c.lbClient, opts).AllPages()
+		listenerPage, err := listeners.List(c.LoadBalancerClient(), opts).AllPages()
 		if err != nil {
 			return false, fmt.Errorf("Failed to list listeners: %v", err)
 		}
@@ -171,7 +171,7 @@ func (c *openstackCloud) ListListeners(opts listeners.ListOpts) (listenerList []
 
 func (c *openstackCloud) CreateListener(opts listeners.CreateOpts) (listener *listeners.Listener, err error) {
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
-		listener, err = listeners.Create(c.lbClient, opts).Extract()
+		listener, err = listeners.Create(c.LoadBalancerClient(), opts).Extract()
 		if err != nil {
 			return false, fmt.Errorf("Unabled to create listener: %v", err)
 		}

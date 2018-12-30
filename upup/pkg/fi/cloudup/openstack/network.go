@@ -77,7 +77,7 @@ func (c *openstackCloud) GetExternalNetwork() (net *networks.Network, err error)
 
 	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
 
-		err = networks.List(c.neutronClient, networks.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
+		err = networks.List(c.NetworkingClient(), networks.ListOpts{}).EachPage(func(page pagination.Page) (bool, error) {
 			var externalNetwork []NetworkWithExternalExt
 			err := networks.ExtractNetworksInto(page, &externalNetwork)
 			if err != nil {
