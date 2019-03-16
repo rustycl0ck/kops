@@ -14,7 +14,7 @@
 
 
 DOCKER_REGISTRY?=gcr.io/must-override
-S3_BUCKET?=s3://must-override/
+S3_BUCKET?=s3://public-files.pz9tbevxyiqglv9e/kops-dev
 UPLOAD_DEST?=$(S3_BUCKET)
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
